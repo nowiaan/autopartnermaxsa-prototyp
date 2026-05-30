@@ -73,6 +73,9 @@ export default function App() {
   const [emailTone, setEmailTone] = useState<"professional" | "technical" | "friendly">("professional");
   const [generatedEmails, setGeneratedEmails] = useState<Record<string, string>>({});
 
+  // Interactive Demo Mode variables
+  const [demoActive, setDemoActive] = useState<boolean>(true);
+
   // Global applet state
   const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -372,6 +375,52 @@ export default function App() {
     }));
   };
 
+  const handleAutoDemoStep = (stepNo: number) => {
+    if (stepNo === 1) {
+      // 1. Otwórz zapytanie klienta (Ford Focus Mk3)
+      setActiveInquiryId("inq_1");
+      setStep(1);
+    } else if (stepNo === 2) {
+      // 2. Kliknij „Analizuj z AI”
+      setActiveInquiryId("inq_1");
+      setStep(1);
+      setLoadingMsg("Asystent analizuje zapytanie klienta...");
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setStep(2);
+      }, 500);
+    } else if (stepNo === 3) {
+      // 3. Zobacz dane rozpoznane i braki
+      setActiveInquiryId("inq_1");
+      setStep(2);
+    } else if (stepNo === 4) {
+      // 4. Przejdź do wyceny
+      setActiveInquiryId("inq_1");
+      setStep(3);
+    } else if (stepNo === 5) {
+      // 5. Wybierz produkt i sprawdź marżę
+      setActiveInquiryId("inq_1");
+      setStep(3);
+      setSelectedProductId(prev => ({ ...prev, inq_1: "prod_1_2" })); // Bosch Premium
+    } else if (stepNo === 6) {
+      // 6. Wygeneruj odpowiedź (zobacz wersję roboczą)
+      setActiveInquiryId("inq_1");
+      setStep(3);
+      generateDraftOfferMessage();
+    } else if (stepNo === 7) {
+      // 7. Zapisz korektę i dodaj notatki
+      setActiveInquiryId("inq_1");
+      setStep(4);
+      setCustomNotes(prev => ({ ...prev, inq_1: "Dodano darmowy spray montażowy AP Max dla warsztatu." }));
+    } else if (stepNo === 8) {
+      // 8. Ręcznie zatwierdź i wyślij ofertę do CRM
+      setActiveInquiryId("inq_1");
+      setStep(4);
+      handleSendOffer();
+    }
+  };
+
   const selectedProductMargin = calculateMargin(selectedProduct?.currentPrice || 0, selectedProduct?.costPrice || 0);
 
   return (
@@ -459,6 +508,220 @@ export default function App() {
         {/* Scrollable Work Desk */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
           
+          {/* =========== PILOT SCOPE & INTERACTIVE DEMO SCENARIOS PANEL =========== */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg max-w-5xl space-y-4" id="pilot-demo-dashboard">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 bg-blue-600/20 text-blue-400 text-[10px] uppercase font-mono font-black tracking-wider rounded border border-blue-500/10">
+                    Interaktywny Scenariusz Demo
+                  </span>
+                  <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 text-[10px] font-bold rounded uppercase tracking-wide flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Pilot B2B Aktywny
+                  </span>
+                </div>
+                <h3 className="text-sm font-black text-white flex items-center gap-2 mt-1">
+                  🎓 Rekomendowana Ścieżka Prezentacji (Zajmuje ok. 3 minuty)
+                </h3>
+                <p className="text-xs text-slate-400 leading-snug">
+                  Zamiast domyślać się kolejnych funkcji, klikaj kolejno przyciski scenariusza, aby asystent automatycznie konfigurował aplikację do kolejnych etapów!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDemoActive(!demoActive)}
+                  className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sliders size={13} className="text-blue-400" />
+                  {demoActive ? "Ukryj Ścieżkę Demo" : "Pokaż Ścieżkę Demo"}
+                </button>
+              </div>
+            </div>
+
+            {/* In-scope / Out-of-scope Clarity Banner */}
+            <div className="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <h4 className="text-xs font-black text-blue-400 uppercase tracking-wide flex items-center gap-1">
+                  🎯 Rzeczywisty Zakres Pierwszego Pilota (MVP):
+                </h4>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Podgląd zapytania e-mail, inteligentna analiza ubytków danych (sygnał VIN), kalkulacja marży z tabelą TecDoc dla handlowca oraz wersja robocza e-maila jako materiał do korekty przed wysyłką.
+                </p>
+              </div>
+
+              <div className="space-y-1.5 md:border-l md:border-slate-800 md:pl-4">
+                <h4 className="text-xs font-black text-amber-500 uppercase tracking-wide flex items-center gap-1">
+                  🔮 Przyszła Wizualizacja i Potencjał Skalowania:
+                </h4>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Widoki zarządcze, monitor adoptowanych KPI w czasie rzeczywistym i automatyczny logging błędów pokazują, jak rozwiązanie wesprze decydentów po zakończeniu testu. System chroni przed błędami — brak automatycznej wysyłki.
+                </p>
+              </div>
+            </div>
+
+            {/* Interactive Step-by-step controller */}
+            {demoActive && (
+              <div className="p-4 bg-slate-950/30 rounded-xl border border-slate-800/60 space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <h5 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                    ⚡ Pulpit nawigacyjnego demo (klikaj od 1 do 8 za kolejnością):
+                  </h5>
+                  <span className="text-[9px] text-[#3b82f6] font-mono select-none">Kliknięcie natychmiast zmienia stan</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs text-slate-300">
+                  
+                  {/* Step 1 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(1)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${activeInquiryId === "inq_1" && step === 1 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 01</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">1. Otwórz Zapytanie</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Wybór e-maila w lewym panelu</span>
+                  </button>
+
+                  {/* Step 2 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(2)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 2 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 02</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">2. Przeanalizuj AI</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Przetwarzanie tekstu z asystą</span>
+                  </button>
+
+                  {/* Step 3 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(3)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 2 && activeAnalysis 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 03</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">3. Mapowanie i Braki</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Identyfikacja ubytków (części, VIN)</span>
+                  </button>
+
+                  {/* Step 4 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(4)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 3 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 04</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">4. Szukaj w Katalogu</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Dobór części z magazynów</span>
+                  </button>
+
+                  {/* Step 5 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(5)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 3 && targetMargin === 25 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 05</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">5. Koryguj Marżę</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Weryfikacja cen i suwaka rentowności</span>
+                  </button>
+
+                  {/* Step 6 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(6)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 4 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 06</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">6. Generuj E-mail</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Podgląd roboczego szkicu od AI</span>
+                  </button>
+
+                  {/* Step 7 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(7)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 4 && customNotes["inq_1"].includes("spray") 
+                        ? "bg-blue-600/10 border-blue-500 text-white font-semibold ring-1 ring-blue-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-blue-400 uppercase font-bold">Krok 07</span>
+                      <span className="text-[9px] px-1 bg-blue-600/20 text-blue-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">7. Dyspozycje Handlowca</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Zadaj korektę i zregeneruj treść</span>
+                  </button>
+
+                  {/* Step 8 */}
+                  <button
+                    type="button"
+                    onClick={() => handleAutoDemoStep(8)}
+                    className={`p-2.5 rounded-lg border text-left flex flex-col justify-between h-20 transition duration-150 cursor-pointer hover:bg-slate-800/50
+                      ${step === 5 
+                        ? "bg-emerald-600/20 border-emerald-500/80 text-white font-semibold ring-1 ring-emerald-500/20" 
+                        : "bg-slate-900/40 border-slate-800 text-slate-400"
+                      }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-[9px] font-mono text-emerald-400 uppercase font-bold">Krok 08</span>
+                      <span className="text-[9px] px-1 bg-emerald-600/20 text-emerald-400 rounded">Uruchom</span>
+                    </div>
+                    <span className="text-[11px] mt-1 font-bold leading-none text-slate-200">8. Zatwierdź i Wyślij</span>
+                    <span className="text-[9px] text-slate-400 leading-tight mt-0.5 line-clamp-1">Human-In-The-Loop zapis w CRM</span>
+                  </button>
+
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Diagnostic KPIs block */}
           <section>
             <KPIStats metrics={metrics} isPilotActive={true} />
@@ -1131,7 +1394,7 @@ export default function App() {
                       onClick={handleSendOffer}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-sm hover:shadow-md transition flex items-center gap-1.5 cursor-pointer"
                     >
-                      Wyślij Gotową Ofertę <ArrowRight size={14} />
+                      Zatwierdź jako handlowiec i wyślij <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
@@ -1150,9 +1413,9 @@ export default function App() {
                 </div>
 
                 <div className="space-y-2">
-                  <h2 className="text-xl font-black text-[#1e293b]">Oferta e-mail została pomyślnie nadana!</h2>
+                  <h2 className="text-xl font-black text-[#1e293b]">Oferta została ręcznie zatwierdzona i wysłana!</h2>
                   <p className="text-xs text-[#64748b] max-w-md mx-auto leading-relaxed">
-                    Partner otrzymał gotowy plik kalkulacji i szczegółowy dobór części na adres: <strong className="text-[#1e293b]">{activeInquiry.email}</strong>. Korespondencja handlowa figuruje pod identyfikatorem zgłoszenia <span className="font-mono bg-slate-100 p-0.5 px-2 rounded text-rose-600 font-bold border border-slate-200">AP-MIN-{activeInquiryId.toUpperCase()}</span>.
+                    Handlowiec pomyślnie zweryfikował kalkulację i ręcznie autoryzował wysłanie doboru części bezpośrednio na adres partnera: <strong className="text-[#1e293b]">{activeInquiry.email}</strong>. Korespondencja handlowa figuruje pod identyfikatorem zgłoszenia <span className="font-mono bg-slate-100 p-0.5 px-2 rounded text-rose-600 font-bold border border-slate-200 font-bold">AP-MIN-{activeInquiryId.toUpperCase()}</span>.
                   </p>
                 </div>
 

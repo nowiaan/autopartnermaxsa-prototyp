@@ -9,7 +9,16 @@ interface KPIStatsProps {
 
 export const KPIStats: React.FC<KPIStatsProps> = ({ metrics, isPilotActive }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-2">
+    <div className="space-y-2 mb-4">
+      {/* Simulation disclaimer label */}
+      <div className="bg-amber-50/70 border border-amber-200/50 rounded-lg p-2 px-3 flex items-center gap-2 text-amber-800 text-[10px]">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0 animate-ping"></span>
+        <span>
+          <strong>ℹ️ Dane demonstracyjne:</strong> Wszystkie wskaźniki KPI w niniejszym prototypie są symulacją pokazującą metodologię pomiaru i korzyści biznesowe wdrożenia pilotażowego.
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       {/* Average preparation time */}
       <div className="bg-white border border-[#e2e8f0] rounded-xl p-4.5 hover:border-[#3b82f6] shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(15,23,42,0.02)] transition duration-200">
         <div className="flex justify-between items-start">
@@ -88,6 +97,7 @@ export const KPIStats: React.FC<KPIStatsProps> = ({ metrics, isPilotActive }) =>
           Weryfikacja rynkowa zintegrowanej marży dynamicznej.
         </div>
       </div>
+    </div>
     </div>
   );
 };
