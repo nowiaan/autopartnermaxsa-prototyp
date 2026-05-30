@@ -31,11 +31,10 @@ jobs:
       - name: Konfiguracja Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
 
       - name: Instalacja zależności
-        run: npm ci || npm install
+        run: npm install
 
       - name: Budowanie projektu (Vite)
         run: npm run build
