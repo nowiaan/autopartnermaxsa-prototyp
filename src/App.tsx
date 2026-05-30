@@ -26,6 +26,7 @@ import { initialInquiries, initialAnalyses, initialProducts, initialCrossSells }
 import { Sidebar } from "./components/Sidebar";
 import { KPIStats } from "./components/KPIStats";
 import { CustomInquiryModal } from "./components/CustomInquiryModal";
+import { localSimulateAnalysis, localSimulateEmail } from "./utils/simulation";
 
 // Initial Pilot Metrics
 const defaultMetrics: MetricSummary = {
@@ -163,14 +164,22 @@ export default function App() {
     };
 
     try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body })
-      });
-      const data = await response.json();
-      
-      const parsedAnalysis: Analysis = data.analysis;
+      let parsedAnalysis: Analysis;
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body })
+        });
+        if (!response.ok) {
+          throw new Error("Serwer zwrócił błąd: " + response.status);
+        }
+        const data = await response.json();
+        parsedAnalysis = data.analysis;
+      } catch (fetchErr) {
+        console.warn("⚠️ Serwer API nie odpowiada lub jest niedostępny (np. na GitHub Pages). Uruchamiam lokalny silnik analizy (client-side AI simulator)...", fetchErr);
+        parsedAnalysis = localSimulateAnalysis(body);
+      }
 
       // Sformowanie dynamicznych produktów dopasowanych do wyodrębnionej części
       const partFound = parsedAnalysis.partName || "Część eksploatacyjna";
@@ -253,10 +262,31 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/generate-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let emailText = "";
+      try {
+        const response = await fetch("/api/generate-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientName: activeInquiry.clientName,
+            companyName: activeInquiry.companyName,
+            selectedProduct,
+            altProducts: activeProducts.filter(p => p.id !== selectedProduct.id),
+            crossSells: activeCrossSells,
+            targetMargin,
+            language: emailLanguage,
+            tone: emailTone,
+            customNotes: customNotes[activeInquiry.id] || ""
+          })
+        });
+        if (!response.ok) {
+          throw new Error("Serwer zwrócił błąd: " + response.status);
+        }
+        const data = await response.json();
+        emailText = data.emailText;
+      } catch (fetchErr) {
+        console.warn("⚠️ Serwer API do generowania maili jest niedostępny (np. na GitHub Pages). Uruchamiam lokalny generator ofert (client-side AI generator)...", fetchErr);
+        emailText = localSimulateEmail({
           clientName: activeInquiry.clientName,
           companyName: activeInquiry.companyName,
           selectedProduct,
@@ -266,13 +296,12 @@ export default function App() {
           language: emailLanguage,
           tone: emailTone,
           customNotes: customNotes[activeInquiry.id] || ""
-        })
-      });
+        });
+      }
 
-      const data = await response.json();
       setGeneratedEmails(prev => ({
         ...prev,
-        [activeInquiry.id]: data.emailText
+        [activeInquiry.id]: emailText
       }));
       setStep(4);
     } catch (err) {
