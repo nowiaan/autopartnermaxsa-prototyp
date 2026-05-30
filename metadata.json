@@ -1,0 +1,6 @@
+{
+  "name": "Asystent Ofertowania AutoPartner Max",
+  "description": "Zaawansowany asystent ofertowania B2B z automatycznym parsowaniem zapytań, analizą marży, sugestiami cross-sell i generatorem ofert.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
